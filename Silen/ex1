@@ -1,0 +1,147 @@
+import time
+import unittest
+from selenium import webdriver
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.common.by import By
+
+
+class PythonOrgSearch(unittest.TestCase):
+    def setUp(self):
+        # запуск  при начале каждого теста
+        self.driver = webdriver.Chrome()
+
+    def tearDown(self):
+        # закрытие браузера при окончании каждого теста
+        self.driver.close()
+
+    def test_search(self):
+        driver = self.driver
+        # открытие  страницы https://habr.com/ru/all/
+        driver.get("https://habr.com/ru/all/")
+        # проверка наличия слова Python в заголовке страницы
+        self.assertIn("Хабр", driver.title)
+
+        # ждем 5 секунд
+        time.sleep(5)
+        # получение элемента страницы с именем q (строка поиска)
+        # (откройте вручную в любом браузере сайт http://www.python.org,
+        # нажмите правой кнопкой мыши по строке поиска,
+        # выберите пункт "просмотреть код",
+        # убедитесь, что у этого элемента name="q")
+        elem = driver.find_element(By.XPATH, "//a[@class='tm-header-user-menu__item tm-header-user-menu__search']//*[name()='svg']")
+        # ждем 5 секунд
+        time.sleep(5)
+        elem.click()
+        time.sleep(5)
+        elem = driver.find_element(By.XPATH, "//input[@placeholder='Поиск']")
+        # набор слова chupakabra в найденном элементе
+        elem.send_keys("chupakabrachupakabra")
+        # ждем 5 секунд
+        time.sleep(5)
+        # нажатие кнопки Enter в найденном элементе
+        elem.send_keys(Keys.RETURN)
+        # ждем 5 секунд
+        time.sleep(5)
+        # проверка наличия строки "No results found."
+        # на странице с результатами поиска
+        self.assertIn("К сожалению, здесь пока нет ни одной публикации", driver.page_source)
+
+    def test_login(self):
+        driver = self.driver
+        # открытие  страницы https://habr.com/ru/all/
+        driver.get("https://habr.com/ru/all/")
+        # проверка наличия слова Python в заголовке страницы
+        self.assertIn("Хабр", driver.title)
+
+        # ждем 5 секунд
+        time.sleep(5)
+        # поиск текстового поля для ввода логина по XPath
+        # (тег input с name='login')
+        elem = driver.find_element(By.XPATH, "//div[@class='tm-dropdown']//div[@class='tm-dropdown__head']//*[name()='svg']")
+        elem.click()
+        time.sleep(5)
+        elem = driver.find_element(By.XPATH, "//a[@class='tm-user-menu__auth-button']")
+        elem.click()
+        time.sleep(5)
+        elem = driver.find_element(By.XPATH, "//input[@id='email_field']")
+        # ввод логина
+        elem.send_keys("sharapaeva1.21@gmail.com")
+        # ждем 5 секунд
+
+        # поиск текстового поля для ввода пароля по XPath
+        # (тег input с name='password')
+        elem = driver.find_element(By.XPATH, "//input[@id='password_field']")
+        # ввод логина
+        elem.send_keys("sharapaeva")
+        # ждем 5 секунд
+        time.sleep(5)
+        # жмем ввод для отправки формы
+        elem.send_keys(Keys.RETURN)
+        # ждем 5 секунд
+        time.sleep(5)
+
+        elem = driver.find_element(By.XPATH, "//div[@data-test-id='menu-toggle-user']//img[@class='tm-entity-image__pic']")
+        # нажатие на ссылку
+        elem.click()
+        # ждем 5 секунд
+        time.sleep(5)
+
+        self.assertIn("Выход", driver.page_source)
+        # ждем 5 секунд
+        time.sleep(5)
+        # вывод кода страницы для отладки, потом можно будет убрать
+
+
+
+    def test_work_breadcrumbs(self):
+
+        driver = self.driver
+        # открытие  страницы https://habr.com/ru/all/
+        driver.get("https://habr.com/ru/all/")
+
+        time.sleep(5)
+
+        # elem = driver.find_element(By.XPATH, "//a[contains(@class,'close-modal')]//span[@class='icon-close']")
+        #  # нажатие на ссылку
+        # elem.click()
+        #  # ждем 5 секунд
+        # time.sleep(5)
+
+        elems = driver.find_elements(By.CSS_SELECTOR, '.use')
+        # перебираем полученные подпункты меню,
+        # выписываем названия и ссылки в отдельные списки
+        # потому что при переходе по ссылкам на другие страницы
+        # связь со списком подпунктов будет потеряна
+        href_list = []
+        name_list = []
+        for e in elems:
+            href_list.append(e.get_attribute("href"))
+            name_list.append(e.get_attribute('innerHTML'))
+
+        # перебираем полученные ссылки (кроме последней)
+        for i in range(len(href_list)-1):
+            # переходим по ссылке
+            driver.get(
+                href_list[i]
+            )
+            # получаем строчку хлебных крошек
+            elem = driver.find_element(By.CSS_SELECTOR, '.breadcrumbs')
+            # проверка наличия в хлебных крошках ссылки на пункт About
+            self.assertIn("Карьера", elem.get_attribute('innerHTML'))
+            # проверка наличия в хлебных крошках
+            # наличия названия текущего пункта
+            self.assertIn(
+                # название текущего пункта
+                name_list[i],
+                # строчка хлебных крошек
+                elem.get_attribute('innerHTML')
+            )
+            # ждем 5 секунд
+            time.sleep(3)
+
+
+
+
+
+if __name__ == '__main__':
+    unittest.main()
